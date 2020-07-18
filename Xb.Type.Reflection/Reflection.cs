@@ -41,6 +41,12 @@ namespace Xb.Type
 
         public class Property
         {
+            public static Property Get(PropertyInfo info)
+            {
+                return new Property(info);
+            }
+
+
             /// <summary>
             /// Property IO operator
             /// </summary>
@@ -129,42 +135,42 @@ namespace Xb.Type
             /// <summary>
             /// Property Type
             /// </summary>
-            public System.Type Type { get; }
+            public System.Type Type { get; private set; }
 
             /// <summary>
             /// Base-Type of nullable type (same "Type" value if non-nullable)
             /// </summary>
-            public System.Type UnderlyingType { get; }
+            public System.Type UnderlyingType { get; private set; }
 
             /// <summary>
             /// Enable to set value or not
             /// </summary>
-            public bool IsSettable { get; }
+            public bool IsSettable { get; private set; }
 
             /// <summary>
             /// Enable to get value or not
             /// </summary>
-            public bool IsGettable { get; }
+            public bool IsGettable { get; private set; }
 
             /// <summary>
             /// Is nullable value or not
             /// </summary>
-            public bool IsNullable { get; }
+            public bool IsNullable { get; private set; }
 
             /// <summary>
             /// Is value-type or not
             /// </summary>
-            public bool IsValueType { get; }
+            public bool IsValueType { get; private set; }
 
             /// <summary>
             /// is basicly reference type (String. DateTime, Timespam)
             /// </summary>
-            public bool IsBasiclyRefType { get; }
+            public bool IsBasiclyRefType { get; private set; }
 
             /// <summary>
             /// Is basicly type or not
             /// </summary>
-            public bool IsBasicType { get; }
+            public bool IsBasicType { get; private set; }
 
             /// <summary>
             /// Property Accessor
@@ -176,7 +182,7 @@ namespace Xb.Type
             /// Constructor
             /// </summary>
             /// <param name="info"></param>
-            public Property(PropertyInfo info)
+            private Property(PropertyInfo info)
             {
                 this.Info = info;
 
@@ -246,6 +252,18 @@ namespace Xb.Type
             }
 
             /// <summary>
+            /// Getter
+            /// </summary>
+            /// <typeparam name="TType"></typeparam>
+            /// <param name="instance"></param>
+            /// <returns></returns>
+            public TType Get<TType>(object instance)
+            {
+
+                return (TType)this._accessor.GetValue(instance);
+            }
+
+            /// <summary>
             /// Setter
             /// </summary>
             /// <param name="instance"></param>
@@ -254,25 +272,36 @@ namespace Xb.Type
             {
                 this._accessor.SetValue(instance, value);
             }
+
+            /// <summary>
+            /// Setter
+            /// </summary>
+            /// <typeparam name="TType"></typeparam>
+            /// <param name="instance"></param>
+            /// <param name="value"></param>
+            public void Set<TType>(object instance, TType value)
+            {
+                this._accessor.SetValue(instance, value);
+            }
         }
 
 
-        public System.Type Type { get; }
+        public System.Type Type { get; private set; }
 
-        public ConcurrentDictionary<string, Xb.Type.Reflection.Property> Properties { get; }
+        public ConcurrentDictionary<string, Xb.Type.Reflection.Property> Properties { get; private set; }
             = new ConcurrentDictionary<string, Xb.Type.Reflection.Property>();
 
-        public System.Type[] Interfaces { get; }
+        public System.Type[] Interfaces { get; private set; }
 
-        public ConstructorInfo[] Constructors { get; }
+        public ConstructorInfo[] Constructors { get; private set; }
 
-        public PropertyInfo[] PropertyInfos { get; }
+        public PropertyInfo[] PropertyInfos { get; private set; }
 
-        public MethodInfo[] MethodInfos { get; }
+        public MethodInfo[] MethodInfos { get; private set; }
 
-        public EventInfo[] EventInfos { get; }
+        public EventInfo[] EventInfos { get; private set; }
 
-        public FieldInfo[] FieldInfos { get; }
+        public FieldInfo[] FieldInfos { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -287,7 +316,7 @@ namespace Xb.Type
 
             foreach (var property in this.PropertyInfos)
             {
-                var xbProp = new Xb.Type.Reflection.Property(property);
+                var xbProp = Property.Get(property);
                 this.Properties.GetOrAdd(property.Name, xbProp);
             }
 
@@ -302,5 +331,16 @@ namespace Xb.Type
 
         public bool HasProperty(string name)
             => this.Properties.ContainsKey(name);
+
+        public Xb.Type.Reflection.Property GetProperty(string propertyName)
+        {
+            if (!this.HasProperty(propertyName))
+                return null;
+
+            if (this.Properties.TryGetValue(propertyName, out Property property))
+                return property;
+
+            return null;
+        }
     }
 }
