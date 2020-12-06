@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -10,32 +9,29 @@ namespace Xb.Type
     {
         #region "static"
 
-        private static ConcurrentDictionary<string, Xb.Type.Reflection> _cache
+        private static ConcurrentDictionary<string, Reflection> _cache
             = new ConcurrentDictionary<string, Reflection>();
 
-        public static Xb.Type.Reflection Get(string typeFullName)
+        public static Reflection Get(System.Type type)
         {
-            var exists = Reflection._cache.FirstOrDefault(p => p.Key == typeFullName);
-            if (exists.Value != null)
-                return exists.Value;
+            if (Reflection._cache.ContainsKey(type.FullName))
+                return Reflection._cache[type.FullName];
 
             try
             {
-                var newRef = new Xb.Type.Reflection(System.Type.GetType(typeFullName));
-                Reflection._cache.GetOrAdd(typeFullName, newRef);
+                var newRef = new Reflection(type);
+                Reflection._cache.GetOrAdd(type.FullName, newRef);
 
                 return newRef;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Type not found: {typeFullName}");
+                throw new Exception($"Type not found: {type.FullName}", ex);
             }
         }
 
-        public static Xb.Type.Reflection Get(System.Type type)
-        {
-            return Reflection.Get(type.FullName);
-        }
+        public static Reflection Get(string typeFullName)
+            => Reflection.Get(System.Type.GetType(typeFullName));
 
         #endregion
 
@@ -97,7 +93,10 @@ namespace Xb.Type
                 /// </summary>
                 /// <param name="getter"></param>
                 /// <param name="setter"></param>
-                public Accessor(Func<TTarget, TProperty> getter, Action<TTarget, TProperty> setter)
+                public Accessor(
+                    Func<TTarget, TProperty> getter,
+                    Action<TTarget, TProperty> setter
+                )
                 {
                     this._getter = getter;
                     this._setter = setter;
@@ -163,7 +162,7 @@ namespace Xb.Type
             public bool IsValueType { get; private set; }
 
             /// <summary>
-            /// is basicly reference type (String. DateTime, Timespam)
+            /// Is basicly reference type (String. DateTime, Timespam)
             /// </summary>
             public bool IsBasiclyRefType { get; private set; }
 
@@ -171,6 +170,11 @@ namespace Xb.Type
             /// Is basicly type or not
             /// </summary>
             public bool IsBasicType { get; private set; }
+
+            /// <summary>
+            /// Property Name
+            /// </summary>
+            public string Name => this.Info.Name;
 
             /// <summary>
             /// Property Accessor
@@ -194,7 +198,8 @@ namespace Xb.Type
                 var getterMethod = info.GetGetMethod();
                 if (getterMethod != null)
                 {
-                    var getterType = typeof(Func<,>).MakeGenericType(info.DeclaringType, info.PropertyType);
+                    var getterType = typeof(Func<,>)
+                        .MakeGenericType(info.DeclaringType, info.PropertyType);
                     try
                     {
                         getter = getterMethod.CreateDelegate(getterType);
@@ -202,13 +207,13 @@ namespace Xb.Type
                     catch (Exception)
                     {
                     }
-
                 }
 
                 var setterMethod = info.GetSetMethod();
                 if (setterMethod != null)
                 {
-                    var setterType = typeof(Action<,>).MakeGenericType(info.DeclaringType, info.PropertyType);
+                    var setterType = typeof(Action<,>)
+                        .MakeGenericType(info.DeclaringType, info.PropertyType);
                     try
                     {
                         setter = (info.GetSetMethod()).CreateDelegate(setterType);
@@ -218,8 +223,10 @@ namespace Xb.Type
                     }
                 }
 
-                System.Type accessorType = typeof(Accessor<,>).MakeGenericType(info.DeclaringType, info.PropertyType);
-                this._accessor = (IAccessor)Activator.CreateInstance(accessorType, getter, setter);
+                System.Type accessorType = typeof(Accessor<,>)
+                    .MakeGenericType(info.DeclaringType, info.PropertyType);
+                this._accessor = (IAccessor)Activator
+                    .CreateInstance(accessorType, getter, setter);
 
 
                 this.Type = info.PropertyType;
@@ -227,16 +234,20 @@ namespace Xb.Type
                 this.IsSettable = this._accessor.HasSetter;
 
                 var typeInfo = this.Type.GetTypeInfo();
-                this.IsNullable = (typeInfo.IsGenericType
-                                   && this.Type.GetGenericTypeDefinition() == typeof(Nullable<>));
+                this.IsNullable = (
+                    typeInfo.IsGenericType
+                    && this.Type.GetGenericTypeDefinition() == typeof(Nullable<>)
+                );
                 this.UnderlyingType = (this.IsNullable)
                     ? Nullable.GetUnderlyingType(this.Type)
                     : this.Type;
                 this.IsValueType = typeInfo.IsValueType;
 
-                this.IsBasiclyRefType = (this.Type == typeof(string)
-                                         || this.Type == typeof(DateTime)
-                                         || this.Type == typeof(TimeSpan));
+                this.IsBasiclyRefType = (
+                    this.Type == typeof(string)
+                    || this.Type == typeof(DateTime)
+                    || this.Type == typeof(TimeSpan)
+                );
 
                 this.IsBasicType = (this.IsValueType || this.IsBasiclyRefType);
             }
@@ -247,9 +258,7 @@ namespace Xb.Type
             /// <param name="instance"></param>
             /// <returns></returns>
             public object Get(object instance)
-            {
-                return this._accessor.GetValue(instance);
-            }
+                => this._accessor.GetValue(instance);
 
             /// <summary>
             /// Getter
@@ -258,10 +267,7 @@ namespace Xb.Type
             /// <param name="instance"></param>
             /// <returns></returns>
             public TType Get<TType>(object instance)
-            {
-
-                return (TType)this._accessor.GetValue(instance);
-            }
+                => (TType)this._accessor.GetValue(instance);
 
             /// <summary>
             /// Setter
@@ -269,9 +275,7 @@ namespace Xb.Type
             /// <param name="instance"></param>
             /// <param name="value"></param>
             public void Set(object instance, object value)
-            {
-                this._accessor.SetValue(instance, value);
-            }
+                => this._accessor.SetValue(instance, value);
 
             /// <summary>
             /// Setter
@@ -280,16 +284,14 @@ namespace Xb.Type
             /// <param name="instance"></param>
             /// <param name="value"></param>
             public void Set<TType>(object instance, TType value)
-            {
-                this._accessor.SetValue(instance, value);
-            }
+                => this._accessor.SetValue(instance, value);
         }
 
 
         public System.Type Type { get; private set; }
 
-        public ConcurrentDictionary<string, Xb.Type.Reflection.Property> Properties { get; private set; }
-            = new ConcurrentDictionary<string, Xb.Type.Reflection.Property>();
+        public ConcurrentDictionary<string, Reflection.Property> Properties { get; private set; }
+            = new ConcurrentDictionary<string, Reflection.Property>();
 
         public System.Type[] Interfaces { get; private set; }
 
@@ -332,7 +334,37 @@ namespace Xb.Type
         public bool HasProperty(string name)
             => this.Properties.ContainsKey(name);
 
-        public Xb.Type.Reflection.Property GetProperty(string propertyName)
+        public bool HasMethod(string name)
+            => this.MethodInfos.Any(e => e.Name == name);
+
+        public bool HasEvent(string name)
+            => this.EventInfos.Any(e => e.Name == name);
+
+        public bool HasField(string name)
+            => this.FieldInfos.Any(e => e.Name == name);
+
+        public bool TryGetPropertyValue(
+            object instance,
+            string propertyName,
+            out object value
+        )
+        {
+            value = null;
+
+            var property = this.Properties
+                .Where(e => e.Value.Name == propertyName)
+                .Select(e => e.Value)
+                .FirstOrDefault();
+
+            if (property == null)
+                return false;
+
+            value = property.Get(instance);
+
+            return true;
+        }
+
+        public Reflection.Property GetProperty(string propertyName)
         {
             if (!this.HasProperty(propertyName))
                 return null;
