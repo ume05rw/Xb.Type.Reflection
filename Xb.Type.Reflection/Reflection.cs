@@ -343,13 +343,13 @@ namespace Xb.Type
         public bool HasField(string name)
             => this.FieldInfos.Any(e => e.Name == name);
 
-        public bool TryGetPropertyValue(
+        public bool TryGetPropertyValue<TType>(
             object instance,
             string propertyName,
-            out object value
+            out TType value
         )
         {
-            value = null;
+            value = default(TType);
 
             var property = this.Properties
                 .Where(e => e.Value.Name == propertyName)
@@ -359,7 +359,7 @@ namespace Xb.Type
             if (property == null)
                 return false;
 
-            value = property.Get(instance);
+            value = property.Get<TType>(instance);
 
             return true;
         }
@@ -374,5 +374,88 @@ namespace Xb.Type
 
             return null;
         }
+
+        ///// <summary>
+        ///// Try to execute the method
+        ///// </summary>
+        ///// <param name="instance"></param>
+        ///// <param name="methodName"></param>
+        ///// <param name="args"></param>
+        ///// <param name="result"></param>
+        ///// <returns></returns>
+        ///// <remarks>
+        ///// Generics Method Not Supported.
+        ///// </remarks>
+        //public bool TryInvokeMethod(
+        //    object instance,
+        //    string methodName,
+        //    object[] args,
+        //    out object result
+        //)
+        //{
+        //    result = null;
+
+        //    var methods = this.MethodInfos
+        //        .Where(e => e.Name == methodName /* || e.Name.StartsWith($"{methodName}`") */)
+        //        .ToArray();
+
+        //    if (methods.Length <= 0)
+        //        return false;
+
+        //    var formattedArgs = (args == null)
+        //        ? new object[] { }
+        //        : args;
+
+        //    var invoked = false;
+        //    foreach (var method in methods)
+        //    {
+        //        try
+        //        {
+        //            result = method.Invoke(instance, formattedArgs);
+        //            invoked = true;
+        //            break;
+        //        }
+        //        catch (Exception)
+        //        {
+        //        }
+        //    }
+
+        //    return invoked;
+        //}
+
+        ///// <summary>
+        ///// Try to execute the method
+        ///// </summary>
+        ///// <param name="instance"></param>
+        ///// <param name="methodName"></param>
+        ///// <param name="result"></param>
+        ///// <returns></returns>
+        ///// <remarks>
+        ///// Generics Method Not Supported.
+        ///// </remarks>
+        //public bool TryInvokeMethod(object instance, string methodName, out object result)
+        //    => this.TryInvokeMethod(instance, methodName, new object[] { }, out result);
+
+        ///// <summary>
+        ///// Try to get the field value
+        ///// </summary>
+        ///// <param name="instance"></param>
+        ///// <param name="fieldName"></param>
+        ///// <param name="value"></param>
+        ///// <returns></returns>
+        //public bool TryGetFiledValue(object instance, string fieldName, out object value)
+        //{
+        //    value = null;
+
+        //    var field = this.FieldInfos
+        //        .FirstOrDefault(e => e.Name == fieldName /*|| e.Name.StartsWith($"{fieldName}`") */);
+
+        //    if (field == null)
+        //        return false;
+
+        //    value = field.GetValue(instance);
+
+        //    return true;
+        //}
     }
 }
