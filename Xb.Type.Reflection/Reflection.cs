@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace Xb.Type
 {
+    /// <summary>
+    /// Reflection Utility
+    /// </summary>
     public class Reflection
     {
         #region "static"
@@ -14,6 +17,11 @@ namespace Xb.Type
         private static readonly ConcurrentDictionary<string, Reflection> _cache
             = new ConcurrentDictionary<string, Reflection>();
 
+        /// <summary>
+        ///  Create or Get by cache
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static Reflection Get(System.Type type)
         {
             if (Reflection._cache.ContainsKey(type.FullName))
@@ -32,13 +40,26 @@ namespace Xb.Type
             }
         }
 
+        /// <summary>
+        /// Create or Get by cache
+        /// </summary>
+        /// <param name="typeFullName"></param>
+        /// <returns></returns>
         public static Reflection Get(string typeFullName)
             => Reflection.Get(System.Type.GetType(typeFullName));
 
         #endregion
 
+        /// <summary>
+        /// Property Accessor
+        /// </summary>
         public class Property
         {
+            /// <summary>
+            /// Create Reflection.Property
+            /// </summary>
+            /// <param name="info"></param>
+            /// <returns></returns>
             public static Property Get(PropertyInfo info)
             {
                 return new Property(info);

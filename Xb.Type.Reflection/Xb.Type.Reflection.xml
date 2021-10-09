@@ -1,0 +1,320 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Xb.Type.Reflection</name>
+    </assembly>
+    <members>
+        <member name="T:Xb.Type.Reflection.Property.IAccessor">
+            <summary>
+            Property IO operator
+            </summary>
+            <remarks>
+            参考：ほぼコピペ。
+            http://d.hatena.ne.jp/machi_pon/20090821/1250813986
+            </remarks>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.IAccessor.GetValue(System.Object)">
+            <summary>
+            Get property value
+            </summary>
+            <param name="instance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.IAccessor.SetValue(System.Object,System.Object)">
+            <summary>
+            Set property value
+            </summary>
+            <param name="instance"></param>
+            <param name="value"></param>
+        </member>
+        <member name="T:Xb.Type.Reflection.Property.Accessor`2">
+            <summary>
+            Property IO operator
+            </summary>
+            <typeparam name="TTarget"></typeparam>
+            <typeparam name="TProperty"></typeparam>
+            <remarks>
+            参考：ほぼコピペ。
+            http://d.hatena.ne.jp/machi_pon/20090821/1250813986
+            </remarks>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Accessor`2.#ctor(System.Func{`0,`1},System.Action{`0,`1})">
+            <summary>
+            Constructor
+            </summary>
+            <param name="getter"></param>
+            <param name="setter"></param>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Accessor`2.GetValue(System.Object)">
+            <summary>
+            Get property value
+            </summary>
+            <param name="instance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Accessor`2.SetValue(System.Object,System.Object)">
+            <summary>
+            Set property value
+            </summary>
+            <param name="instance"></param>
+            <param name="value"></param>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.Info">
+            <summary>
+            PropertyInfo
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.Type">
+            <summary>
+            Property Type
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.UnderlyingType">
+            <summary>
+            Base-Type of nullable type (same "Type" value if non-nullable)
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsSettable">
+            <summary>
+            Enable to set value or not
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsGettable">
+            <summary>
+            Enable to get value or not
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsNullable">
+            <summary>
+            Is nullable value or not
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsValueType">
+            <summary>
+            Is value-type or not
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsBasiclyRefType">
+            <summary>
+            Is basicly reference type (String. DateTime, Timespam)
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.IsBasicType">
+            <summary>
+            Is basicly type or not
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Property.Name">
+            <summary>
+            Property Name
+            </summary>
+        </member>
+        <member name="F:Xb.Type.Reflection.Property._accessor">
+            <summary>
+            Property Accessor
+            </summary>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.#ctor(System.Reflection.PropertyInfo)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="info"></param>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Get(System.Object)">
+            <summary>
+            Getter
+            </summary>
+            <param name="instance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Get``1(System.Object)">
+            <summary>
+            Getter
+            </summary>
+            <typeparam name="TType"></typeparam>
+            <param name="instance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Set(System.Object,System.Object)">
+            <summary>
+            Setter
+            </summary>
+            <param name="instance"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:Xb.Type.Reflection.Property.Set``1(System.Object,``0)">
+            <summary>
+            Setter
+            </summary>
+            <typeparam name="TType"></typeparam>
+            <param name="instance"></param>
+            <param name="value"></param>
+        </member>
+        <member name="P:Xb.Type.Reflection.Type">
+            <summary>
+            Type
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Properties">
+            <summary>
+            Reflection.Property List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Interfaces">
+            <summary>
+            Interface-Type List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.Constructors">
+            <summary>
+            ConstructorInfo List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.PropertyInfos">
+            <summary>
+            PropertyInfo List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.MethodInfos">
+            <summary>
+            MethodInfos List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.MethodParameters">
+            <summary>
+            Method Parameters Dictionary
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.EventInfos">
+            <summary>
+            EventInfo List
+            </summary>
+        </member>
+        <member name="P:Xb.Type.Reflection.FieldInfos">
+            <summary>
+            FieldInfo List
+            </summary>
+        </member>
+        <member name="M:Xb.Type.Reflection.#ctor(System.Type)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:Xb.Type.Reflection.HasInterface(System.Type)">
+            <summary>
+            HasInterface
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.HasProperty(System.String)">
+            <summary>
+            HasProperty
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.HasMethod(System.String)">
+            <summary>
+            HasMethod
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.HasEvent(System.String)">
+            <summary>
+            HasEvent
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.HasField(System.String)">
+            <summary>
+            HasField
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.GetPropertyValue``1(System.Object,System.String)">
+            <summary>
+            GetPropertyValue
+            </summary>
+            <typeparam name="TType"></typeparam>
+            <param name="instance"></param>
+            <param name="propertyName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.GetFieldValue``1(System.Object,System.String)">
+            <summary>
+            GetFieldValue
+            </summary>
+            <typeparam name="TType"></typeparam>
+            <param name="instance"></param>
+            <param name="fieldName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.GetProperty(System.String)">
+            <summary>
+            Get Reflection.Property
+            </summary>
+            <param name="propertyName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.GetMethodInfo(System.String,System.Object[])">
+            <summary>
+            Get methodinfo matched name and argument count, type.
+            </summary>
+            <param name="methodName"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.FormatArguments(System.Reflection.MethodInfo,System.Object[])">
+            <summary>
+            Append argument array to optional parameter's default value.
+            </summary>
+            <param name="method"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.InvokeMethod``1(System.Object,System.String,System.Object[])">
+            <summary>
+            Invoke Method and Get Result
+            </summary>
+            <param name="instance"></param>
+            <param name="methodName"></param>
+            <param name="args"></param>
+            <returns></returns>
+            <remarks>
+            Generics Method Not Supported.
+            </remarks>
+        </member>
+        <member name="M:Xb.Type.Reflection.InvokeMethod``1(System.Object,System.String)">
+            <summary>
+            Invoke Method and Get Result
+            </summary>
+            <typeparam name="TResult"></typeparam>
+            <param name="instance"></param>
+            <param name="methodName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Xb.Type.Reflection.InvokeMethod(System.Object,System.String,System.Object[])">
+            <summary>
+            Invoke Method without Result
+            </summary>
+            <param name="instance"></param>
+            <param name="methodName"></param>
+            <param name="args"></param>
+        </member>
+        <member name="M:Xb.Type.Reflection.InvokeMethod(System.Object,System.String)">
+            <summary>
+            Invoke Method without Result
+            </summary>
+            <param name="instance"></param>
+            <param name="methodName"></param>
+            <returns></returns>
+            <remarks>
+            Generics Method Not Supported.
+            </remarks>
+        </member>
+    </members>
+</doc>
