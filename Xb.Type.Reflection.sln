@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xb.Type.Reflection", "Xb.Type.Reflection\Xb.Type.Reflection.csproj", "{37712CE6-B9CE-4FAA-8218-DE1B63EBF1DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xb.Type.Reflection", "Xb.Type.Reflection\Xb.Type.Reflection.csproj", "{37712CE6-B9CE-4FAA-8218-DE1B63EBF1DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestXbTypeReflection", "TextXbTypeReflection\TestXbTypeReflection.csproj", "{2516FF77-DB62-46FA-994C-48908C58F6EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{37712CE6-B9CE-4FAA-8218-DE1B63EBF1DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37712CE6-B9CE-4FAA-8218-DE1B63EBF1DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37712CE6-B9CE-4FAA-8218-DE1B63EBF1DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2516FF77-DB62-46FA-994C-48908C58F6EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2516FF77-DB62-46FA-994C-48908C58F6EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2516FF77-DB62-46FA-994C-48908C58F6EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2516FF77-DB62-46FA-994C-48908C58F6EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

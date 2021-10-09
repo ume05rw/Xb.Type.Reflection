@@ -124,7 +124,14 @@ namespace Xb.Type
                 /// <param name="value"></param>
                 public void SetValue(object instance, object value)
                 {
-                    this._setter((TTarget)instance, (TProperty)value);
+                    try
+                    {
+                        this._setter((TTarget)instance, (TProperty)value);
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
                 }
             }
 
@@ -407,7 +414,7 @@ namespace Xb.Type
                         var param = parameters[i];
                         if (args.Length <= i)
                         {
-                            if (!param.IsOptional)
+                            if (!param.IsOptional || !param.HasDefaultValue)
                                 return false;
                         }
                         else
@@ -421,6 +428,27 @@ namespace Xb.Type
                     return true;
                 })
                 .FirstOrDefault();
+        }
+
+        private object[] FormatArguments(MethodInfo method, object[] args)
+        {
+            var result = new List<object>(args ?? Array.Empty<object>());
+            var parameters = this.MethodParameters[method];
+
+            if (result.Count == parameters.Count)
+                return result.ToArray();
+
+            for (var i = result.Count; i < parameters.Count; i++)
+            {
+                var param = parameters[i];
+                if (!param.IsOptional || !param.HasDefaultValue)
+                    // ここには来ない
+                    throw new InvalidOperationException("Required parameters are missing.");
+
+                result.Add(param.DefaultValue);
+            }
+
+            return result.ToArray();
         }
 
         /// <summary>
@@ -439,15 +467,17 @@ namespace Xb.Type
             params object[] args
         )
         {
-            var formattedArgs = args ?? Array.Empty<object>();
+            args = args ?? Array.Empty<object>();
 
-            var method = this.GetMethodInfo(methodName, formattedArgs);
+            var method = this.GetMethodInfo(methodName, args);
 
             if (method == null)
                 throw new InvalidOperationException($"Method [{methodName}] Not Found.");
 
             try
             {
+                var formattedArgs = this.FormatArguments(method, args);
+
                 return (TResult)method.Invoke(instance, formattedArgs);
             }
             catch (Exception ex)
@@ -478,15 +508,17 @@ namespace Xb.Type
             params object[] args
         )
         {
-            var formattedArgs = args ?? Array.Empty<object>();
+            args = args ?? Array.Empty<object>();
 
-            var method = this.GetMethodInfo(methodName, formattedArgs);
+            var method = this.GetMethodInfo(methodName, args);
 
             if (method == null)
                 throw new InvalidOperationException($"Method [{methodName}] Not Found.");
 
             try
             {
+                var formattedArgs = this.FormatArguments(method, args);
+
                 method.Invoke(instance, formattedArgs);
             }
             catch (Exception ex)
