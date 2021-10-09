@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -9,7 +11,7 @@ namespace Xb.Type
     {
         #region "static"
 
-        private static ConcurrentDictionary<string, Reflection> _cache
+        private static readonly ConcurrentDictionary<string, Reflection> _cache
             = new ConcurrentDictionary<string, Reflection>();
 
         public static Reflection Get(System.Type type)
@@ -179,7 +181,7 @@ namespace Xb.Type
             /// <summary>
             /// Property Accessor
             /// </summary>
-            private IAccessor _accessor;
+            private readonly IAccessor _accessor;
 
 
             /// <summary>
@@ -290,20 +292,21 @@ namespace Xb.Type
 
         public System.Type Type { get; private set; }
 
-        public ConcurrentDictionary<string, Reflection.Property> Properties { get; private set; }
-            = new ConcurrentDictionary<string, Reflection.Property>();
+        public ReadOnlyDictionary<string, Reflection.Property> Properties { get; private set; }
 
         public System.Type[] Interfaces { get; private set; }
 
-        public ConstructorInfo[] Constructors { get; private set; }
+        public ReadOnlyCollection<ConstructorInfo> Constructors { get; private set; }
 
-        public PropertyInfo[] PropertyInfos { get; private set; }
+        public ReadOnlyCollection<PropertyInfo> PropertyInfos { get; private set; }
 
-        public MethodInfo[] MethodInfos { get; private set; }
+        public ReadOnlyCollection<MethodInfo> MethodInfos { get; private set; }
 
-        public EventInfo[] EventInfos { get; private set; }
+        public ReadOnlyDictionary<MethodInfo, ReadOnlyCollection<ParameterInfo>> MethodParameters { get; private set; }
 
-        public FieldInfo[] FieldInfos { get; private set; }
+        public ReadOnlyCollection<EventInfo> EventInfos { get; private set; }
+
+        public ReadOnlyCollection<FieldInfo> FieldInfos { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -314,18 +317,28 @@ namespace Xb.Type
 
             this.Interfaces = type.GetInterfaces();
 
-            this.PropertyInfos = type.GetProperties();
+            this.PropertyInfos = new ReadOnlyCollection<PropertyInfo>(type.GetProperties());
 
+            var propDic = new Dictionary<string, Property>();
             foreach (var property in this.PropertyInfos)
             {
                 var xbProp = Property.Get(property);
-                this.Properties.GetOrAdd(property.Name, xbProp);
+                propDic.Add(property.Name, xbProp);
             }
+            this.Properties = new ReadOnlyDictionary<string, Property>(propDic);
 
-            this.Constructors = type.GetConstructors();
-            this.MethodInfos = type.GetMethods();
-            this.EventInfos = type.GetEvents();
-            this.FieldInfos = type.GetFields();
+            this.Constructors = new ReadOnlyCollection<ConstructorInfo>(type.GetConstructors());
+
+            this.MethodInfos = new ReadOnlyCollection<MethodInfo>(type.GetMethods());
+
+            var methodDic = new Dictionary<MethodInfo, ReadOnlyCollection<ParameterInfo>>();
+            foreach (var method in this.MethodInfos)
+                methodDic.Add(method, new ReadOnlyCollection<ParameterInfo>(method.GetParameters()));
+
+            this.MethodParameters = new ReadOnlyDictionary<MethodInfo, ReadOnlyCollection<ParameterInfo>>(methodDic);
+
+            this.EventInfos = new ReadOnlyCollection<EventInfo>(type.GetEvents());
+            this.FieldInfos = new ReadOnlyCollection<FieldInfo>(type.GetFields());
         }
 
         public bool HasInterface(System.Type type)
@@ -349,7 +362,7 @@ namespace Xb.Type
             out TType value
         )
         {
-            value = default(TType);
+            value = default;
 
             var property = this.Properties
                 .Where(e => e.Value.Name == propertyName)
@@ -375,66 +388,125 @@ namespace Xb.Type
             return null;
         }
 
-        ///// <summary>
-        ///// Try to execute the method
-        ///// </summary>
-        ///// <param name="instance"></param>
-        ///// <param name="methodName"></param>
-        ///// <param name="args"></param>
-        ///// <param name="result"></param>
-        ///// <returns></returns>
-        ///// <remarks>
-        ///// Generics Method Not Supported.
-        ///// </remarks>
-        //public bool TryInvokeMethod(
-        //    object instance,
-        //    string methodName,
-        //    object[] args,
-        //    out object result
-        //)
-        //{
-        //    result = null;
 
-        //    var methods = this.MethodInfos
-        //        .Where(e => e.Name == methodName /* || e.Name.StartsWith($"{methodName}`") */)
-        //        .ToArray();
 
-        //    if (methods.Length <= 0)
-        //        return false;
+        private MethodInfo GetMethodInfo(string methodName, params object[] args)
+        {
+            return this.MethodInfos
+                .Where(e => e.Name == methodName)
+                .Where(e =>
+                {
+                    if (!this.MethodParameters.TryGetValue(e, out var parameters))
+                        throw new Exception("うせやろ！？");
 
-        //    var formattedArgs = (args == null)
-        //        ? new object[] { }
-        //        : args;
+                    if (parameters.Count < args.Length)
+                        return false;
 
-        //    var invoked = false;
-        //    foreach (var method in methods)
-        //    {
-        //        try
-        //        {
-        //            result = method.Invoke(instance, formattedArgs);
-        //            invoked = true;
-        //            break;
-        //        }
-        //        catch (Exception)
-        //        {
-        //        }
-        //    }
+                    for (var i = 0; i < parameters.Count; i++)
+                    {
+                        var param = parameters[i];
+                        if (args.Length <= i)
+                        {
+                            if (!param.IsOptional)
+                                return false;
+                        }
+                        else
+                        {
+                            var arg = args[i];
+                            if (param.ParameterType != arg.GetType())
+                                return false;
+                        }
+                    }
 
-        //    return invoked;
-        //}
+                    return true;
+                })
+                .FirstOrDefault();
+        }
 
-        ///// <summary>
-        ///// Try to execute the method
-        ///// </summary>
-        ///// <param name="instance"></param>
-        ///// <param name="methodName"></param>
-        ///// <param name="result"></param>
-        ///// <returns></returns>
-        ///// <remarks>
-        ///// Generics Method Not Supported.
-        ///// </remarks>
-        //public bool TryInvokeMethod(object instance, string methodName, out object result)
-        //    => this.TryInvokeMethod(instance, methodName, new object[] { }, out result);
+        /// <summary>
+        /// Invoke Method and Get Result
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="methodName"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Generics Method Not Supported.
+        /// </remarks>
+        public TResult InvokeMethod<TResult>(
+            object instance,
+            string methodName,
+            params object[] args
+        )
+        {
+            var formattedArgs = args ?? Array.Empty<object>();
+
+            var method = this.GetMethodInfo(methodName, formattedArgs);
+
+            if (method == null)
+                throw new InvalidOperationException($"Method [{methodName}] Not Found.");
+
+            try
+            {
+                return (TResult)method.Invoke(instance, formattedArgs);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Invoke Failure.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Invoke Method and Get Result
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="instance"></param>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
+        public TResult InvokeMethod<TResult>(object instance, string methodName)
+            => this.InvokeMethod<TResult>(instance, methodName, Array.Empty<object>());
+
+        /// <summary>
+        /// Invoke Method without Result
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="methodName"></param>
+        /// <param name="args"></param>
+        public void InvokeMethod(
+            object instance,
+            string methodName,
+            params object[] args
+        )
+        {
+            var formattedArgs = args ?? Array.Empty<object>();
+
+            var method = this.GetMethodInfo(methodName, formattedArgs);
+
+            if (method == null)
+                throw new InvalidOperationException($"Method [{methodName}] Not Found.");
+
+            try
+            {
+                method.Invoke(instance, formattedArgs);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Invoke Failure.", ex);
+            }
+        }
+
+
+        /// <summary>
+        /// Invoke Method without Result
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Generics Method Not Supported.
+        /// </remarks>
+        public void InvokeMethod(object instance, string methodName)
+            => this.InvokeMethod(instance, methodName, Array.Empty<object>());
 
         ///// <summary>
         ///// Try to get the field value
