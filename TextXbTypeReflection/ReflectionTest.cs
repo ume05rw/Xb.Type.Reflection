@@ -21,11 +21,13 @@ namespace TestXbTypeReflection
 
         public TestSimpleClass()
         {
+            this.PublicFieldString = "Ç‚Ç¡ÇŸÇ§";
             this.PublicPropertyFloatReadOnly = 1.0f;
         }
 
         public TestSimpleClass(float floatValue)
         {
+            this.PublicFieldString = "Ç«Å[Ç∑Ç©ÅH";
             this.PublicPropertyFloatReadOnly = floatValue;
         }
 
@@ -146,6 +148,16 @@ namespace TestXbTypeReflection
             {
                 Assert.True(true);
             }
+        }
+
+        [Fact]
+        public void GetFieldValueTest()
+        {
+            var instance = new TestSimpleClass();
+            var reflection = Reflection.Get(instance.GetType().FullName);
+
+            var fieldValue = reflection.GetFieldValue<string>(instance, "PublicFieldString");
+            Assert.Equal("Ç‚Ç¡ÇŸÇ§", fieldValue);
         }
 
         [Fact]

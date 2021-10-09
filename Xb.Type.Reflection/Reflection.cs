@@ -296,23 +296,49 @@ namespace Xb.Type
                 => this._accessor.SetValue(instance, value);
         }
 
-
+        /// <summary>
+        /// Type
+        /// </summary>
         public System.Type Type { get; private set; }
 
+        /// <summary>
+        /// Reflection.Property List
+        /// </summary>
         public ReadOnlyDictionary<string, Reflection.Property> Properties { get; private set; }
 
-        public System.Type[] Interfaces { get; private set; }
+        /// <summary>
+        /// Interface-Type List
+        /// </summary>
+        public ReadOnlyCollection<System.Type> Interfaces { get; private set; }
 
+        /// <summary>
+        /// ConstructorInfo List
+        /// </summary>
         public ReadOnlyCollection<ConstructorInfo> Constructors { get; private set; }
 
+        /// <summary>
+        /// PropertyInfo List
+        /// </summary>
         public ReadOnlyCollection<PropertyInfo> PropertyInfos { get; private set; }
 
+        /// <summary>
+        /// MethodInfos List
+        /// </summary>
         public ReadOnlyCollection<MethodInfo> MethodInfos { get; private set; }
 
+        /// <summary>
+        /// Method Parameters Dictionary
+        /// </summary>
         public ReadOnlyDictionary<MethodInfo, ReadOnlyCollection<ParameterInfo>> MethodParameters { get; private set; }
 
+        /// <summary>
+        /// EventInfo List
+        /// </summary>
         public ReadOnlyCollection<EventInfo> EventInfos { get; private set; }
 
+        /// <summary>
+        /// FieldInfo List
+        /// </summary>
         public ReadOnlyCollection<FieldInfo> FieldInfos { get; private set; }
 
         /// <summary>
@@ -322,8 +348,7 @@ namespace Xb.Type
         {
             this.Type = type;
 
-            this.Interfaces = type.GetInterfaces();
-
+            this.Interfaces = new ReadOnlyCollection<System.Type>(type.GetInterfaces());
             this.PropertyInfos = new ReadOnlyCollection<PropertyInfo>(type.GetProperties());
 
             var propDic = new Dictionary<string, Property>();
@@ -348,42 +373,94 @@ namespace Xb.Type
             this.FieldInfos = new ReadOnlyCollection<FieldInfo>(type.GetFields());
         }
 
+        /// <summary>
+        /// HasInterface
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public bool HasInterface(System.Type type)
             => this.Interfaces.Any(t => t == type);
 
+        /// <summary>
+        /// HasProperty
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public bool HasProperty(string name)
             => this.Properties.ContainsKey(name);
 
+        /// <summary>
+        /// HasMethod
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public bool HasMethod(string name)
             => this.MethodInfos.Any(e => e.Name == name);
 
+        /// <summary>
+        /// HasEvent
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public bool HasEvent(string name)
             => this.EventInfos.Any(e => e.Name == name);
 
+        /// <summary>
+        /// HasField
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public bool HasField(string name)
             => this.FieldInfos.Any(e => e.Name == name);
 
-        public bool TryGetPropertyValue<TType>(
+        /// <summary>
+        /// GetPropertyValue
+        /// </summary>
+        /// <typeparam name="TType"></typeparam>
+        /// <param name="instance"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public TType GetPropertyValue<TType>(
             object instance,
-            string propertyName,
-            out TType value
+            string propertyName
         )
         {
-            value = default;
-
             var property = this.Properties
                 .Where(e => e.Value.Name == propertyName)
                 .Select(e => e.Value)
                 .FirstOrDefault();
 
             if (property == null)
-                return false;
+                throw new InvalidOperationException($"Property [{propertyName}] Not Found.");
 
-            value = property.Get<TType>(instance);
-
-            return true;
+            return property.Get<TType>(instance);
         }
 
+        /// <summary>
+        /// GetFieldValue
+        /// </summary>
+        /// <typeparam name="TType"></typeparam>
+        /// <param name="instance"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        public TType GetFieldValue<TType>(
+            object instance,
+            string fieldName
+        )
+        {
+            var field = this.FieldInfos.FirstOrDefault(e => e.Name == fieldName);
+
+            if (field == null)
+                throw new InvalidOperationException($"Field [{fieldName}] Not Found.");
+
+            return (TType)field.GetValue(instance);
+        }
+
+        /// <summary>
+        /// Get Reflection.Property
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
         public Reflection.Property GetProperty(string propertyName)
         {
             if (!this.HasProperty(propertyName))
@@ -395,8 +472,12 @@ namespace Xb.Type
             return null;
         }
 
-
-
+        /// <summary>
+        /// Get methodinfo matched name and argument count, type.
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         private MethodInfo GetMethodInfo(string methodName, params object[] args)
         {
             return this.MethodInfos
@@ -430,6 +511,12 @@ namespace Xb.Type
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Append argument array to optional parameter's default value.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         private object[] FormatArguments(MethodInfo method, object[] args)
         {
             var result = new List<object>(args ?? Array.Empty<object>());
@@ -539,27 +626,5 @@ namespace Xb.Type
         /// </remarks>
         public void InvokeMethod(object instance, string methodName)
             => this.InvokeMethod(instance, methodName, Array.Empty<object>());
-
-        ///// <summary>
-        ///// Try to get the field value
-        ///// </summary>
-        ///// <param name="instance"></param>
-        ///// <param name="fieldName"></param>
-        ///// <param name="value"></param>
-        ///// <returns></returns>
-        //public bool TryGetFiledValue(object instance, string fieldName, out object value)
-        //{
-        //    value = null;
-
-        //    var field = this.FieldInfos
-        //        .FirstOrDefault(e => e.Name == fieldName /*|| e.Name.StartsWith($"{fieldName}`") */);
-
-        //    if (field == null)
-        //        return false;
-
-        //    value = field.GetValue(instance);
-
-        //    return true;
-        //}
     }
 }
